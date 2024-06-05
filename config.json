@@ -1,0 +1,17 @@
+{
+  "dev": {
+    "connection_string": "mongodb+srv://<user>:<password>@<dev-mongocluster>.azure.mongodb.net/?retryWrites=true",
+    "db_name": "<dbname>",
+    "collection_name": "<collectionname>"
+  },
+  "prod": {
+    "connection_string": "mongodb+srv://<user>:<password>@<prod-mongocluster>.azure.mongodb.net/?retryWrites=true",
+    "db_name": "<dbname>",
+    "collection_name": "<collectionname>"
+  },
+  "local": {
+    "connection_string": "mongodb://localhost:27017",
+    "db_name": "hyunLocal",
+    "collection_name": "projects"
+  }
+}

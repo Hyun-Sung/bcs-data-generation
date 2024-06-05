@@ -1,6 +1,7 @@
 import json
 from MongoDbConnector import MongoDbConnectorFn
-import Faker
+import faker
+
 
 # load config file for connection string
 with open("config.json", "r") as f:
