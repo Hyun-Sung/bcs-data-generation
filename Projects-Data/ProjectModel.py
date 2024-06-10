@@ -1,5 +1,9 @@
 class ProjectModel:
-    def __init__(self, guid, aliasof, name, projectNumber, opportunityId, status, repNumber, repName, specPosition, wsApprovedEqual, verticalMarket, verticalMarketSubsegment, specifierId, specifierName, createdBy, createdByName, createdDate, lastModifiedBy, lastModifiedByName, lastModified, closeDate, notes, description, sequenceOfOperations, sqFootage, defaultSpaceColor, showProductsFromFloorplan, tenantId, city, state, zipCode, country, primaryContact, secondaryContact, tertiaryContact, version):
+    def __init__(self, guid, aliasof, name, projectNumber, opportunityId, status, repNumber, repName, specPosition,
+                 wsApprovedEqual, verticalMarket, verticalMarketSubsegment, specifierId, specifierName, createdBy,
+                 createdByName, createdDate, lastModifiedBy, lastModifiedByName, lastModified, closeDate, notes, description,
+                 sequenceOfOperations, sqFootage, defaultSpaceColor, showProductsFromFloorplan, tenantId, city, state,
+                 zipCode, country, primaryContact, secondaryContact, tertiaryContact, version):
         self._id = guid
         self.AliasOf = aliasof
         self.Name = name

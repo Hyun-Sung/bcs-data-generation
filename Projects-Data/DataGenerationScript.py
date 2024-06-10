@@ -1,7 +1,8 @@
 import json
 from MongoDbConnector import MongoDbConnectorFn
-import faker
-
+import Faker
+from ProjectModel import ProjectModel
+from VersionModel import VersionModel
 
 # load config file for connection string
 with open("config.json", "r") as f:
@@ -15,14 +16,14 @@ collection_name = config[env]["collection_name"]
 client = MongoDbConnectorFn(env)
 db = client[db_name]
 collection = db[collection_name]
-guid = Faker.Guid()
 
 
 def main():
     print("DataScriptForProjectsCollection.py main() called")
 
     # create test data for mongodb collection using the class found in the ProjectModel.py file
-    from ProjectModel import ProjectModel
+
+    guid = Faker.Guid()
 
     client.close()
 
