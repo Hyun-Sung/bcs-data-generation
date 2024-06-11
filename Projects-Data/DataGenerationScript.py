@@ -4,6 +4,7 @@ import faker
 from ProjectModel import ProjectModel
 from VersionModel import VersionModel
 from ContactModel import ContactModel
+import datetime
 
 # load config file for connection string
 with open("C:\\Users\\hsung1a\\PycharmProjects\\bcs-data-generation\\config.json", "r") as f:
@@ -25,8 +26,9 @@ def main():
     # create test data for mongodb collection using the class found in the ProjectModel.py file
     # create a faker object
     fake = faker.Faker()
+    listOfProjects = []
 
-    for i in range(1000):
+    for i in range(10000):
 
         fakePrimaryContact = ContactModel(
             firstName=fake.first_name(),
@@ -54,7 +56,7 @@ def main():
 
         fakeVersion = VersionModel(
             stage=fake.random_int(min=0, max=3),
-            alternate=fake.boolean(chance_of_getting_true=50),
+            alternate=VersionModel.validAlternateValues[fake.random_int(min=0, max=13)],
             revision=fake.random_number(digits=2),
             name=fake.company(),
             notes=fake.text(),
@@ -66,7 +68,7 @@ def main():
         project = ProjectModel(
             guid=fake.uuid4(),
             aliasof=fake.uuid4(),
-            name=fake.building_name(),
+            name=fake.street_name(),
             projectNumber=fake.random_number(digits=7),
             opportunityId=fake.random_number(digits=18),
             status=ProjectModel.validStatusValues[fake.random_int(min=0, max=3)],
@@ -76,15 +78,15 @@ def main():
             wsApprovedEqual=fake.boolean(chance_of_getting_true=50),
             verticalMarket=ProjectModel.validVerticaMarketValues[fake.random_int(min=0, max=7)],
             verticalMarketSubsegment=ProjectModel.validVerticalMarketSubsegmentValues[fake.random_int(min=0, max=8)],
-            specifierId=fake.random_string(length=18),
+            specifierId=ProjectModel.CreateSpecifierId(18),
             specifierName=fake.company(),
-            createdBy=fake.company_id(),
-            createdByName=fake.full_name(),
-            createdDate=fake.date_this_year(before_today=True, after_today=False),
-            lastModifiedBy=fake.company_id(),
-            lastModifiedByName=fake.full_name(),
-            lastModified=fake.date_this_year(before_today=True, after_today=False),
-            closeDate=fake.date_this_year(before_today=False, after_today=True),
+            createdBy=fake.user_name(),
+            createdByName=fake.name(),
+            createdDate= fake.date_this_year(before_today=True, after_today=False).strftime("%Y-%m-%d %H:%M:%S"),
+            lastModifiedBy=fake.user_name(),
+            lastModifiedByName=fake.name(),
+            lastModified=fake.date_this_year(before_today=True, after_today=False).strftime("%Y-%m-%d %H:%M:%S"),
+            closeDate=fake.date_this_year(before_today=False, after_today=True).strftime("%Y-%m-%d %H:%M:%S"),
             notes=fake.text(),
             description=fake.text(),
             sequenceOfOperations=ProjectModel.validSequenceOfOperationsValues[fake.random_int(min=0, max=7)],
@@ -102,7 +104,50 @@ def main():
             version=fakeVersion
         )
 
+        # Convert the ProjectModel instance to a dictionary
+        project_dict = project.__dict__
+
+        # Convert the ContactModel and VersionModel instances to dictionaries
+        fakePrimaryDict = fakePrimaryContact.__dict__
+        fakeSecondaryDict = fakeSecondaryContact.__dict__
+        fakeTertiaryDict = fakeTertiaryContact.__dict__
+        fakeVersionDict = fakeVersion.__dict__
+
+        # Convert the dictionaries to JSON strings
+        fakePrimaryString = json.dumps(fakePrimaryDict)
+        fakeSecondaryString = json.dumps(fakeSecondaryDict)
+        fakeTertiaryString = json.dumps(fakeTertiaryDict)
+        fakeVersionString = json.dumps(fakeVersionDict)
+
+        # Assign the JSON strings to the appropriate keys in the project dictionary
+        project_dict["PrimaryContact"] = fakePrimaryString
+        project_dict["SecondaryContact"] = fakeSecondaryString
+        project_dict["TertiaryContact"] = fakeTertiaryString
+        project_dict["Version"] = fakeVersionString
+
+        # Convert the project dictionary to a JSON string
+        projectJson = json.dumps(project_dict)
+        print(projectJson)
+
+        # Append the project dictionary to the list
+        listOfProjects.append(project_dict)
+
+
+    dateToday = str(datetime.date.today())
+    fileName = "projectsData_" + dateToday + ".json"
+    CreateFileFn(fileName, listOfProjects)
+
+    # insert the list of projects into the collection
+    collection.insert_many(listOfProjects)
+
+    # close the client
+
     client.close()
+
+
+def CreateFileFn(filename, data):
+    with open(filename, "w") as f:
+        json.dump(data, f, indent=4)
 
 
 main()

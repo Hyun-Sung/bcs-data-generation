@@ -1,3 +1,7 @@
+import random
+import string
+
+
 class ProjectModel:
     def __init__(self, guid, aliasof, name, projectNumber, opportunityId, status, repNumber, repName, specPosition,
                  wsApprovedEqual, verticalMarket, verticalMarketSubsegment, specifierId, specifierName, createdBy,
@@ -52,3 +56,8 @@ class ProjectModel:
                                        "Multi-floor linking", "None", "Emergency auto reporting",
                                        "Room based multiple zones", "Other"]
     validTenantIdValues = [0, 2]
+
+    def CreateSpecifierId(length):
+        N = length
+        ran = ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
+        return str(ran)
