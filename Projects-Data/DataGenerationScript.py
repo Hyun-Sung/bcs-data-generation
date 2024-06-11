@@ -5,6 +5,9 @@ from ProjectModel import ProjectModel
 from VersionModel import VersionModel
 from ContactModel import ContactModel
 import datetime
+import uuid
+import base64
+
 
 # load config file for connection string
 with open("C:\\Users\\hsung1a\\PycharmProjects\\bcs-data-generation\\config.json", "r") as f:
@@ -28,7 +31,9 @@ def main():
     fake = faker.Faker()
     listOfProjects = []
 
-    for i in range(10000):
+    for i in range(2):
+        if i % 1000 == 0:
+            print("Creating project number: " + str(i))
 
         fakePrimaryContact = ContactModel(
             firstName=fake.first_name(),
@@ -64,13 +69,30 @@ def main():
             isActive=fake.boolean(chance_of_getting_true=50),
         )
 
+        # I need to create a guid using the $binary operator in mongodb
+        # Generate a guid for both the _id and aliasId
+        guidId = str(uuid.uuid4())
+        aliasGuid = str(uuid.uuid4())
+
+        #encode to get the same format as the c# id creator in bcs-horizon-api
+        encodedGuId = base64.b64encode(uuid.UUID(guidId).bytes)
+        encodedAliasGuid = base64.b64encode(uuid.UUID(aliasGuid).bytes)
+
+        # convert the encoded guids to utf-8
+        encodedGuId = encodedGuId.decode('utf-8')
+        encodedAliasGuid = encodedAliasGuid.decode('utf-8')
+
+        #createMongoIdObject and AliasIdObject
+        mongoIdObject = CreateMongoIdObjectFn(encodedGuId)
+        aliasIdObject = CreateMongoIdObjectFn(encodedAliasGuid)
+
         # create a project model object. Should be 36 fields.
         project = ProjectModel(
-            guid=fake.uuid4(),
-            aliasof=fake.uuid4(),
+            guid=mongoIdObject,
+            aliasof=aliasIdObject,
             name=fake.street_name(),
             projectNumber=fake.random_number(digits=7),
-            opportunityId=fake.random_number(digits=18),
+            opportunityId=ProjectModel.CreateStringId(18),
             status=ProjectModel.validStatusValues[fake.random_int(min=0, max=3)],
             repNumber=fake.random_number(digits=7),
             repName=fake.company(),
@@ -78,7 +100,7 @@ def main():
             wsApprovedEqual=fake.boolean(chance_of_getting_true=50),
             verticalMarket=ProjectModel.validVerticaMarketValues[fake.random_int(min=0, max=7)],
             verticalMarketSubsegment=ProjectModel.validVerticalMarketSubsegmentValues[fake.random_int(min=0, max=8)],
-            specifierId=ProjectModel.CreateSpecifierId(18),
+            specifierId=ProjectModel.CreateStringId(18),
             specifierName=fake.company(),
             createdBy=fake.user_name(),
             createdByName=fake.name(),
@@ -127,7 +149,7 @@ def main():
 
         # Convert the project dictionary to a JSON string
         projectJson = json.dumps(project_dict)
-        print(projectJson)
+        #print(projectJson)
 
         # Append the project dictionary to the list
         listOfProjects.append(project_dict)
@@ -144,6 +166,8 @@ def main():
 
     client.close()
 
+def CreateMongoIdObjectFn(guidString):
+    return {"$binary": {"base64": guidString, "subType": "03"}}
 
 def CreateFileFn(filename, data):
     with open(filename, "w") as f:

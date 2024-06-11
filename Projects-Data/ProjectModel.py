@@ -57,7 +57,7 @@ class ProjectModel:
                                        "Room based multiple zones", "Other"]
     validTenantIdValues = [0, 2]
 
-    def CreateSpecifierId(length):
+    def CreateStringId(length):
         N = length
         ran = ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
         return str(ran)
