@@ -7,3 +7,6 @@ class VersionModel:
         self.Notes = notes
         self.IsPrimary = isPrimary
         self.IsActive = isActive
+
+    validAlternateValues = ["Alt A", "Alt T", "Alt C", "Alt H", "Alt P", "Alt Z", "Alt Y",
+                            "Alt Q", "Alt X", "Alt K", "Alt D", "Alt E", "Base", "Alt B", None]

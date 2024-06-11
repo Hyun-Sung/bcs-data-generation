@@ -40,3 +40,15 @@ class ProjectModel:
         self.SecondaryContact = secondaryContact
         self.TertiaryContact = tertiaryContact
         self.Version = version
+
+    validVerticaMarketValues = ["Education", "Healthcare", "Hospitality", "Office", "Public Space", "Residential", "Retail", "Other"]
+    validVerticalMarketSubsegmentValues = ["Education", "Industrial", "Healthcare", "Hospitality", "Office", "Public Space", "Residential", "Retail", "Other"]
+    validStatusValues = ["Testing", "Closed", "New", "Pending"]
+    validSpecPositionValues = ["Clipsal", "Lutron", "Encelium", "Wattstopper", "Cooper/Greengate",
+                               "Encillium", "Unknown","Enlighted", "Hubbell", "LC&D", "Crestron",
+                               "Acuity/nLight/Sensor Switch", "CP Electronics", "Douglas", "ETC",
+                               "Other", "Leviton"]
+    validSequenceOfOperationsValues = ["Unknown", "Wattstopper", "basic standalone switching",
+                                       "Multi-floor linking", "None", "Emergency auto reporting",
+                                       "Room based multiple zones", "Other"]
+    validTenantIdValues = [0, 2]

@@ -7,7 +7,7 @@ def MongoDbConnectorFn(env_name):
     env = env_name
     if not env or env is None:
         env = default_env
-    with open("config.json", "r") as f:
+    with open("C:\\Users\\hsung1a\\PycharmProjects\\bcs-data-generation\\config.json", "r") as f:
         config = json.load(f)
 
     # choose environment
