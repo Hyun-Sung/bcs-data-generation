@@ -1,4 +1,5 @@
 import json
+import bson
 from MongoDbConnector import MongoDbConnectorFn
 import faker
 from ProjectModel import ProjectModel
@@ -10,7 +11,7 @@ import base64
 
 
 # load config file for connection string
-with open("C:\\Users\\hsung1a\\PycharmProjects\\bcs-data-generation\\config.json", "r") as f:
+with open("pathToConfigFile\\config.json", "r") as f:
     config = json.load(f)
 
 # client related variables
@@ -31,7 +32,7 @@ def main():
     fake = faker.Faker()
     listOfProjects = []
 
-    for i in range(2):
+    for i in range(40000):
         if i % 1000 == 0:
             print("Creating project number: " + str(i))
 
@@ -69,27 +70,15 @@ def main():
             isActive=fake.boolean(chance_of_getting_true=50),
         )
 
-        # I need to create a guid using the $binary operator in mongodb
         # Generate a guid for both the _id and aliasId
-        guidId = str(uuid.uuid4())
-        aliasGuid = str(uuid.uuid4())
 
-        #encode to get the same format as the c# id creator in bcs-horizon-api
-        encodedGuId = base64.b64encode(uuid.UUID(guidId).bytes)
-        encodedAliasGuid = base64.b64encode(uuid.UUID(aliasGuid).bytes)
-
-        # convert the encoded guids to utf-8
-        encodedGuId = encodedGuId.decode('utf-8')
-        encodedAliasGuid = encodedAliasGuid.decode('utf-8')
-
-        #createMongoIdObject and AliasIdObject
-        mongoIdObject = CreateMongoIdObjectFn(encodedGuId)
-        aliasIdObject = CreateMongoIdObjectFn(encodedAliasGuid)
+        guidID = bson.binary.Binary(uuid.uuid4().bytes, 3)
+        aliasGuid = bson.binary.Binary(uuid.uuid4().bytes, 3)
 
         # create a project model object. Should be 36 fields.
         project = ProjectModel(
-            guid=mongoIdObject,
-            aliasof=aliasIdObject,
+            guid=guidID,
+            aliasof=aliasGuid,
             name=fake.street_name(),
             projectNumber=fake.random_number(digits=7),
             opportunityId=ProjectModel.CreateStringId(18),
@@ -135,43 +124,50 @@ def main():
         fakeTertiaryDict = fakeTertiaryContact.__dict__
         fakeVersionDict = fakeVersion.__dict__
 
-        # Convert the dictionaries to JSON strings
-        fakePrimaryString = json.dumps(fakePrimaryDict)
-        fakeSecondaryString = json.dumps(fakeSecondaryDict)
-        fakeTertiaryString = json.dumps(fakeTertiaryDict)
-        fakeVersionString = json.dumps(fakeVersionDict)
-
-        # Assign the JSON strings to the appropriate keys in the project dictionary
-        project_dict["PrimaryContact"] = fakePrimaryString
-        project_dict["SecondaryContact"] = fakeSecondaryString
-        project_dict["TertiaryContact"] = fakeTertiaryString
-        project_dict["Version"] = fakeVersionString
-
-        # Convert the project dictionary to a JSON string
-        projectJson = json.dumps(project_dict)
-        #print(projectJson)
+        project_dict["PrimaryContact"] = fakePrimaryDict
+        project_dict["SecondaryContact"] = fakeSecondaryDict
+        project_dict["TertiaryContact"] = fakeTertiaryDict
+        project_dict["Version"] = fakeVersionDict
 
         # Append the project dictionary to the list
         listOfProjects.append(project_dict)
+
+    # insert the list of projects into the collection
+    collection.insert_many(listOfProjects)
+
+    # Convert the project dictionary to a JSON string.
+    # Creating a mongo importable file requries a different structure for binary uuid than
+    # an insert many operation. Will need to convert first. Then make a json file
+    projectJson = ConvertUuidfromGUIDToBase64String(listOfProjects)
+    projectJson = json.dumps(project_dict)
+    print(projectJson)
 
 
     dateToday = str(datetime.date.today())
     fileName = "projectsData_" + dateToday + ".json"
     CreateFileFn(fileName, listOfProjects)
 
-    # insert the list of projects into the collection
-    collection.insert_many(listOfProjects)
-
     # close the client
 
     client.close()
 
+
 def CreateMongoIdObjectFn(guidString):
     return {"$binary": {"base64": guidString, "subType": "03"}}
+
 
 def CreateFileFn(filename, data):
     with open(filename, "w") as f:
         json.dump(data, f, indent=4)
+
+
+def ConvertUuidfromGUIDToBase64String(projectList):
+    for project in projectList:
+        project["_id"] = CreateMongoIdObjectFn(base64.b64encode(project["_id"]).decode('utf-8'))
+        project["AliasOf"] = CreateMongoIdObjectFn(base64.b64encode(project["AliasOf"]).decode('utf-8'))
+
+
+    return projectList
 
 
 main()
