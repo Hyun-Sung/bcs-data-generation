@@ -11,7 +11,7 @@ import base64
 
 
 # load config file for connection string
-with open("pathToConfigFile\\config.json", "r") as f:
+with open("C:\\Users\\hsung1a\\PycharmProjects\\bcs-data-generation\\config.json", "r") as f:
     config = json.load(f)
 
 # client related variables
