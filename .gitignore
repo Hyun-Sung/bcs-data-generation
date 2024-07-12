@@ -3,3 +3,4 @@
 ################################################################################
 
 /.vs
+/Projects-Data/__pycache__/MongoDbConnector.cpython-39.pyc
