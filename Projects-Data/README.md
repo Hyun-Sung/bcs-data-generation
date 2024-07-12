@@ -12,4 +12,4 @@ A config.json file will need to be configured. An example one is included
 
 notes:
 the projects documents have a different unique way of doing document ids that requires a binary conversion.
-date types need a bsondate time which is handled by the mongotype data function in the datageneration script
+date types need a bsondate time which is handled by the mongotype data function in the datagenerationscript.py file. 
