@@ -1,4 +1,4 @@
-This script is to generate a data file to upload to mongodb. 
+This script is to generate a data file with generated data for the projects collecion to upload to mongodb. 
 
 the project was made with the following versions of the dependencies
 faker 25.8.0
