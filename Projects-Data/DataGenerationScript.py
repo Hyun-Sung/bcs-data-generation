@@ -32,7 +32,7 @@ def main():
     fake = faker.Faker()
     listOfProjects = []
 
-    for i in range(40000):
+    for i in range(500):
         if i % 1000 == 0:
             print("Creating project number: " + str(i))
 
@@ -75,6 +75,12 @@ def main():
         guidID = bson.binary.Binary(uuid.uuid4().bytes, 3)
         aliasGuid = bson.binary.Binary(uuid.uuid4().bytes, 3)
 
+        # Generate random dates for createdDate, lastModified, and closeDate. Mongo
+        # recognized dates converted from timestamps as ISODate objects.
+        fakeCreatedDate = fake.date_time_this_year(before_now=True, after_now=False).timestamp()
+        fakeLastModified = fake.date_time_this_year(before_now=True, after_now=False).timestamp()
+        fakeCloseDate = fake.date_time_this_year(before_now=False, after_now=True).timestamp()
+
         # create a project model object. Should be 36 fields.
         project = ProjectModel(
             guid=guidID,
@@ -83,7 +89,7 @@ def main():
             projectNumber=fake.random_number(digits=7),
             opportunityId=ProjectModel.CreateStringId(18),
             status=ProjectModel.validStatusValues[fake.random_int(min=0, max=3)],
-            repNumber=fake.random_number(digits=7),
+            repNumber=str(fake.random_number(digits=7)),
             repName=fake.company(),
             specPosition=ProjectModel.validSpecPositionValues[fake.random_int(min=0, max=16)],
             wsApprovedEqual=fake.boolean(chance_of_getting_true=50),
@@ -93,11 +99,11 @@ def main():
             specifierName=fake.company(),
             createdBy=fake.user_name(),
             createdByName=fake.name(),
-            createdDate= fake.date_this_year(before_today=True, after_today=False).strftime("%Y-%m-%d %H:%M:%S"),
+            createdDate=datetime.datetime.fromtimestamp(fakeCreatedDate),
             lastModifiedBy=fake.user_name(),
             lastModifiedByName=fake.name(),
-            lastModified=fake.date_this_year(before_today=True, after_today=False).strftime("%Y-%m-%d %H:%M:%S"),
-            closeDate=fake.date_this_year(before_today=False, after_today=True).strftime("%Y-%m-%d %H:%M:%S"),
+            lastModified=datetime.datetime.fromtimestamp(fakeLastModified),
+            closeDate=datetime.datetime.fromtimestamp(fakeCloseDate),
             notes=fake.text(),
             description=fake.text(),
             sequenceOfOperations=ProjectModel.validSequenceOfOperationsValues[fake.random_int(min=0, max=7)],
@@ -137,11 +143,11 @@ def main():
 
     # Convert the project dictionary to a JSON string.
     # Creating a mongo importable file requries a different structure for binary uuid than
-    # an insert many operation. Will need to convert first. Then make a json file
-    projectJson = ConvertUuidfromGUIDToBase64String(listOfProjects)
-    projectJson = json.dumps(project_dict)
-    print(projectJson)
+    # an insert many operation. Will need to convert first. Before making a json file
+    ConvertUuidfromGUIDToBase64String(listOfProjects)
 
+    # Convert the date types to mongo types
+    ConvertDateTypesToMongoTypes(listOfProjects)
 
     dateToday = str(datetime.date.today())
     fileName = "projectsData_" + dateToday + ".json"
@@ -165,9 +171,19 @@ def ConvertUuidfromGUIDToBase64String(projectList):
     for project in projectList:
         project["_id"] = CreateMongoIdObjectFn(base64.b64encode(project["_id"]).decode('utf-8'))
         project["AliasOf"] = CreateMongoIdObjectFn(base64.b64encode(project["AliasOf"]).decode('utf-8'))
-
-
     return projectList
+
+def ConvertDateTypesToMongoTypes(projectList):
+    for project in projectList:
+        project["CreatedDate"] = CreateMongoTypeDate(project["CreatedDate"])
+        project["LastModified"] = CreateMongoTypeDate(project["LastModified"])
+        project["CloseDate"] = CreateMongoTypeDate(project["CloseDate"])
+    return projectList
+
+def CreateMongoTypeDate(inputDate):
+    date_mongo_type = datetime.datetime.combine(inputDate, datetime.time.min)
+    date_object = {'$date': str(date_mongo_type)}
+    return date_object
 
 
 main()
