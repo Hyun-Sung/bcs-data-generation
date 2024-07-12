@@ -9,6 +9,7 @@ python-dateutil 2.9.0.post0
 six 1.16.0
 
 A config.json file will need to be configured. An example one is included 
+a path to the config file will be needed for the mongodbconnector file and the datageneration.py file.
 
 notes:
 the projects documents have a different unique way of doing document ids that requires a binary conversion.
