@@ -22,6 +22,7 @@ collection_name = config[env]["collection_name"]
 client = MongoDbConnectorFn(env)
 db = client[db_name]
 collection = db[collection_name]
+number_of_projects = 40000
 
 
 def main():
@@ -32,7 +33,7 @@ def main():
     fake = faker.Faker()
     listOfProjects = []
 
-    for i in range(500):
+    for i in range(number_of_projects):
         if i % 1000 == 0:
             print("Creating project number: " + str(i))
 
